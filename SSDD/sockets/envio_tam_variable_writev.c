@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 	struct cabecera cab;
 	cab.long1=htonl(strlen(argv[3]));
 	cab.long2=htonl(strlen(argv[4]));
-	struct iovec iov[3];
+	struct iovec iov[3]; 
 	iov[0].iov_base=&cab;
 	iov[0].iov_len=sizeof(cab);
 	iov[1].iov_base=argv[3];
