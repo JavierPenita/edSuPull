@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 
+//extern unsigned long GenerateUUID(uuid_t *uuid);
+
 typedef struct tema {
     const char *nombre; // clave de acceso
     set *subscritos;      // clientes subscritos al tema
@@ -16,15 +18,16 @@ typedef struct tema {
 } tema;
 
 typedef struct cliente {
-    const char *identificador; // clave de acceso UUID
+    const char *identificador = uuid; // clave de acceso UUID
     set *tema_subscritos;        // temas a los que pertenece
-    queue *evento;    // eventos encolados a ese cliente
+    queue *eventos;    // eventos encolados a ese cliente
     // ....
 } cliente;
 
 typedef struct evento {
     char *texto;
     clock_t fecha;
+    int contador;
     // ....
 } evento;
 
@@ -34,7 +37,7 @@ cliente * crea_cliente(map *mc, const char *identificador) {
     c->identificador = identificador;
     c->tema_subscritos = set_create(0); //almacena el conjunto de descriptores de los temas subscritos
     // inicialmente, no tiene mensajes
-    c->evento = queue_create(0); //creamos cola de eventos
+    c->eventos = queue_create(0); //creamos cola de eventos
     // se inserta en el mapa de clientes para poder ser accedido por id
     map_put(mc, c->identificador, c); // el mapa de cliente mc con clave id y valor cliente
     return p;
@@ -54,6 +57,7 @@ evento * crea_evento(char *texto) {
     evento *e = malloc(sizeof(evento + 1)); //caracter nulo final???
     e->texto=texto;
     e->fecha=times(NULL);
+    e->contador=0;
     return e;
 }
 
@@ -76,6 +80,40 @@ int baja_persona_en_grupo(map *mt, const char *nt, map *mc, const char *nc) {
     if (error==-1) return -1;
     set_remove(t->subscritos, c, NULL);
     set_remove(c->tema_subscritos, t, NULL);
+    return 0;
+}
+
+// encolar evento al descriptor de cliente
+int encola_evento(map *mt, char *nombre_tema, evento *e){
+    int error;
+    tema * t = map_get(mt, nombre_tema, &error);
+    if (error==-1) return -1;
+
+    set_iter *i = set_iter_init(t->subscritos);
+    for ( ; set_iter_has_next(i); set_iter_next(i)) {
+	++e->contador;
+        cliente *c = ((cliente *)(set_iter_value(i)));
+        queue_push_back(c->eventos, e);
+    }
+    set_iter_exit(i);
+    return 0;
+}
+//consumir evento
+int consume_mensajes(map *mc, char *id_cliente){
+    // imprime mensajes recibidos por esa persona
+    int error;
+    cliente *c = map_get(mc, id_cliente, &error);
+    if (error==-1) return -1;
+    evento *e;
+    printf("-----------------------------------\n");
+    printf("Persona %s: mensajes encolados %d\n", id_cliente, queue_length(c->eventos));
+    for ( ; queue_length(c->eventos); ){
+        e=queue_pop_front(c->eventos, NULL);
+        printf("%s ha recibido el mensaje (%s) en el momento %ld\n",
+           id_cliente, e->texto, e->fecha);
+	if (--e->contador==0)
+	    free(e);
+    }
     return 0;
 }
 

@@ -38,3 +38,9 @@ Cliente conexion
    -Puntero a char donde se almacenarán los datos leídos
    -Número de caracteres que se quieren leer.
    */
+
+
+   // broker uuid identificador directo
+   // leer fichero temas antes de nada broker
+   //acabar operaciones 
+   //broker conexion
