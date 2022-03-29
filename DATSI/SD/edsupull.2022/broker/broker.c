@@ -99,7 +99,7 @@ int encola_evento(map *mt, char *nombre_tema, evento *e){
     return 0;
 }
 //consumir evento
-int consume_mensajes(map *mc, char *id_cliente){
+int consume_evento(map *mc, char *id_cliente){
     // imprime mensajes recibidos por esa persona
     int error;
     cliente *c = map_get(mc, id_cliente, &error);
@@ -166,6 +166,7 @@ int main(int argc, char *argv[]){
     int s, s_conec;
     unsigned int tam_dir;
     struct sockaddr_in dir, dir_cliente;
+    struct stat st;
     int opcion=1;
 
     if(argc!=3) {
@@ -201,7 +202,22 @@ int main(int argc, char *argv[]){
     pthread_attr_init(&atrib_th); // evita pthread_join
     pthread_attr_setdetachstate(&atrib_th, PTHREAD_CREATE_DETACHED);
 
-    //leer fichero_temas\n recv
+    //leer fichero_temas\n open(argumento temas, solo lectura)
+
+    if ((f = open(argv[0], O_RDONLY)) < 0) {
+        perror("error abriendo fichero");
+        continue;
+    }
+    // fstat(fichero,buffer) examina el fichero y llena el buffer
+    fstat(f, &st);
+    //La función htonl convierte el entero de 32 bits dado por hostlong desde el orden
+    //de bytes del hosts al orden de bytes de la red
+    int tam=st.st_size;
+	int tamn=htonl(tam);
+    // lee (fichero, buffer, bytes del tema + caracter nulo?)
+	void *p = read(f,&st,tamn + 1);
+        close(f);
+
     while(1) {
         tam_dir=sizeof(dir_cliente);
         if ((s_conec=accept(s, (struct sockaddr *)&dir_cliente, &tam_dir))<0){
