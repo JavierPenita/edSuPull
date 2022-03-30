@@ -31,6 +31,13 @@ typedef struct evento {
     // ....
 } evento;
 
+struct recepcion {
+	int long1;
+	int long2;
+    int long3;
+    int long4;
+	int long5;
+};
 // crea un cliente y lo añade al mapa
 cliente * crea_cliente(map *mc, const char *identificador) {
     cliente *c = malloc(sizeof(cliente));
@@ -203,45 +210,65 @@ int main(int argc, char *argv[]){
     pthread_attr_setdetachstate(&atrib_th, PTHREAD_CREATE_DETACHED);
 
     //leer fichero_temas\n open(argumento temas, solo lectura)
+    
+    FILE *f = fopen(argv[0], "r");
+    if (f==NULL)
+        perror ("Error al abrir el fichero de temas");
+        return -1;
+    struct stat sb;
 
-    if ((f = open(argv[0], O_RDONLY)) < 0) {
-        perror("error abriendo fichero");
-        continue;
+    if (stat(f, &sb) == -1) {
+        perror("stat");
+        return -1;
     }
-    // fstat(fichero,buffer) examina el fichero y llena el buffer
-    fstat(f, &st);
-    //La función htonl convierte el entero de 32 bits dado por hostlong desde el orden
-    //de bytes del hosts al orden de bytes de la red
-    int tam=st.st_size;
-	int tamn=htonl(tam);
-    // lee (fichero, buffer, bytes del tema + caracter nulo?)
-	void *p = read(f,&st,tamn + 1);
-        close(f);
+    char *contenido_tema = malloc(sb.st_size);
+
+
+    while(fscanf(f, "%c", contenido_tema) != EOF){
+        printf("%c", contenido_tema); 
+    }
+}   fclose(f);
 
     while(1) {
         tam_dir=sizeof(dir_cliente);
+        //Accept(socket,puntero estructura sockaddr, tamaño estructura)
         if ((s_conec=accept(s, (struct sockaddr *)&dir_cliente, &tam_dir))<0){
             perror("error en accept");
             close(s);
             return 1;
         }
-        /* 
-        	struct cabecera cab;
-		recv(s_conec, &cab, sizeof(cab), MSG_WAITALL);
-		int tam1=ntohl(cab.long1);
-		int tam2=ntohl(cab.long2);
-		char *dato1 = malloc(tam1+1);
-		char *dato2 = malloc(tam2+1);
-		recv(s_conec, dato1, tam1, MSG_WAITALL);
-		recv(s_conec, dato2, tam2, MSG_WAITALL);
-		dato1[tam1]='\0';
-		dato2[tam2]='\0';
+        struct recepcion rec;
+
+		recv(s_conec, &rec, sizeof(rec), MSG_WAITALL);
+		int tam1=ntohl(rec.long1);
+		int tam2=ntohl(rec.long2);
+        int tam3=ntohl(rec.long3);
+		int tam4=ntohl(rec.long4);
+        int tam5=ntohl(rec.long5);
+		
+		char *evento = malloc(tam1+1);
+		char *tam_evento = malloc(tam2+1);
+        char *id = malloc(tam3+1);
+		char *uuid = malloc(tam4+1);
+        char *tema = malloc(tam5+1);
+		
+		recv(s_conec, evento, tam1, MSG_WAITALL);
+		recv(s_conec, tam_evento, tam2, MSG_WAITALL);
+        recv(s_conec, id, tam3, MSG_WAITALL);
+		recv(s_conec, uuid, tam4, MSG_WAITALL);
+        recv(s_conec, tema, tam5, MSG_WAITALL);
+		
+		evento[tam1]='\0';
+		tam_evento[tam2]='\0';
+        id[tam3]='\0';
+		uuid[tam4]='\0';
+        tema[tam5]='\0';
+		
 		close(s_conec);
-		printf("dato1 %s dato2 %s\n", dato1, dato2);
-        */
+      
 	pthread_create(&thid, &atrib_th, servicio, (void *)(long)s_conec);
     }
    
-    close(s);
+    //close(s);
     return 0;
 }
