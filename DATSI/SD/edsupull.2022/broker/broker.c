@@ -223,9 +223,8 @@ int main(int argc, char *argv[]){
     }
     char *contenido_tema = malloc(sb.st_size);
 
-
-    while(fscanf(f, "%c", contenido_tema) != EOF){
-        printf("%c", contenido_tema); 
+    while(fscanf(f, "%s", contenido_tema) != EOF){
+        printf("%s", contenido_tema);            
     }
 }   fclose(f);
 
