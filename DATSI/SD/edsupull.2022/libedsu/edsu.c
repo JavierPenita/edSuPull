@@ -51,10 +51,7 @@ int Trader(const void *evento, uint32_t tam_evento, char *id, UUID_t uuid,const 
 
         struct iovec iov[5];
             iov[0].iov_base=&evento;
-	        iov[0].iov_len=strlen(evento);
-
-            iov[1].iov_base=tam_evento;
-	        iov[1].iov_len=strlen(tam_evento);
+	        iov[0].iov_len=strlen(tam_evento);
 
 	        iov[2].iov_base=id;
 	        iov[2].iov_len=strlen(id);
