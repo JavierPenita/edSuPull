@@ -33,10 +33,9 @@ typedef struct evento {
 
 struct recepcion {
 	int long1;
-	int long2;
+    int long2;
     int long3;
-    int long4;
-	int long5;
+	int long4;
 };
 // crea un cliente y lo añade al mapa
 cliente * crea_cliente(map *mc, const char *identificador) {
@@ -239,29 +238,25 @@ int main(int argc, char *argv[]){
         struct recepcion rec;
 
 		recv(s_conec, &rec, sizeof(rec), MSG_WAITALL);
-		int tam1=ntohl(rec.long1);
-		int tam2=ntohl(rec.long2);
-        int tam3=ntohl(rec.long3);
-		int tam4=ntohl(rec.long4);
-        int tam5=ntohl(rec.long5);
+		int tam_evento=ntohl(rec.long1);
+        int tam_id=ntohl(rec.long2);
+		int tam_uuid=ntohl(rec.long3);
+        int tam_tema=ntohl(rec.long4);
 		
-		char *evento = malloc(tam1+1);
-		char *tam_evento = malloc(tam2+1);
-        char *id = malloc(tam3+1);
-		char *uuid = malloc(tam4+1);
-        char *tema = malloc(tam5+1);
+		char *evento = malloc(tam_evento+1);
+        char *id = malloc(tam_id+1);
+		char *uuid = malloc(tam_uuid+1);
+        char *tema = malloc(tam_tema+1);
 		
-		recv(s_conec, evento, tam1, MSG_WAITALL);
-		recv(s_conec, tam_evento, tam2, MSG_WAITALL);
-        recv(s_conec, id, tam3, MSG_WAITALL);
-		recv(s_conec, uuid, tam4, MSG_WAITALL);
-        recv(s_conec, tema, tam5, MSG_WAITALL);
+		recv(s_conec, evento, tam_evento, MSG_WAITALL);
+        recv(s_conec, id, tam_id, MSG_WAITALL);
+		recv(s_conec, uuid, tam_uuid, MSG_WAITALL);
+        recv(s_conec, tema, tam_tema, MSG_WAITALL);
 		
-		evento[tam1]='\0';
-		tam_evento[tam2]='\0';
-        id[tam3]='\0';
-		uuid[tam4]='\0';
-        tema[tam5]='\0';
+		evento[tam_evento]='\0';
+        id[tam_id]='\0';
+		uuid[tam_uuid]='\0';
+        tema[tam_tema]='\0';
 		
 		close(s_conec);
       
