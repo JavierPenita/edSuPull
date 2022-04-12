@@ -31,12 +31,13 @@ typedef struct evento {
     // ....
 } evento;
 
-struct recepcion {
-	int long1;
-    int long2;
-    int long3;
-	int long4;
+struct cabecera {
+	const void *evento;
+    char *id;
+    UUID_t uuid;
+    const char *tema;
 };
+
 // crea un cliente y lo añade al mapa
 cliente * crea_cliente(map *mc, const char *identificador) {
     cliente *c = malloc(sizeof(cliente));
@@ -235,13 +236,13 @@ int main(int argc, char *argv[]){
             close(s);
             return 1;
         }
-        struct recepcion rec;
+        struct cabecera cab;
 
-		recv(s_conec, &rec, sizeof(rec), MSG_WAITALL);
-		int tam_evento=ntohl(rec.long1);
-        int tam_id=ntohl(rec.long2);
-		int tam_uuid=ntohl(rec.long3);
-        int tam_tema=ntohl(rec.long4);
+		recv(s_conec, &cab, sizeof(cab), MSG_WAITALL);
+		int tam_evento=ntohl(cab.evento);
+        int tam_id=ntohl(cab.id);
+		int tam_uuid=ntohl(cab.uuid);
+        int tam_tema=ntohl(cab.tema);
 		
 		char *evento = malloc(tam_evento+1);
         char *id = malloc(tam_id+1);

@@ -36,6 +36,12 @@ __attribute__((destructor)) void fin(void){
     }
 }
 
+struct cabecera {
+	const void *evento;
+    char *id;
+    UUID_t uuid;
+    const char *tema;
+};
 
 // operaciones que implementan la funcionalidad del proyecto
 
@@ -49,20 +55,29 @@ int Trader(const void *evento, uint32_t tam_evento, char *id, UUID_t uuid,const 
     }
     if( id > "2" ) {
 
+        struct cabecera cab;
+        cab.evento=htonl(strlen(evento));
+        cab.id=htonl(strlen(id));
+        cab.uuid=htonl(strlen(uuid));
+        cab.tema=htonl(strlen(tema));
+      
         struct iovec iov[4];
-            iov[0].iov_base=&evento;
-	        iov[0].iov_len=strlen(tam_evento);
+            iov[0].iov_base=&cab;
+	        iov[0].iov_len=sizeof(cab);
 
-	        iov[1].iov_base=id;
-	        iov[1].iov_len=strlen(id);
+            iov[1].iov_base=&evento;
+	        iov[1].iov_len=strlen(evento);
 
-            iov[2].iov_base=uuid;
-	        iov[2].iov_len=strlen(uuid);
+	        iov[2].iov_base=id;
+	        iov[2].iov_len=strlen(id);
 
-            iov[3].iov_base=&tema;
-	        iov[3].iov_len=strlen(tema);
+            iov[3].iov_base=uuid;
+	        iov[3].iov_len=strlen(uuid);
 
-        if ((escrito=writev(s, iov,4)) < 0) {
+            iov[4].iov_base=&tema;
+	        iov[4].iov_len=strlen(tema);
+
+        if ((escrito=writev(s, iov,5)) < 0) {
         	    perror("error en writev");
         	    close(s);
         	    return -1;
