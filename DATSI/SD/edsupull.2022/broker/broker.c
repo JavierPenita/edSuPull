@@ -32,10 +32,10 @@ typedef struct evento {
 } evento;
 
 struct cabecera {
-	const void *evento;
-    char *id;
-    UUID_t uuid;
-    const char *tema;
+	int evento;
+    int id;
+    int  uuid;
+    int tema;
 };
 
 // crea un cliente y lo añade al mapa

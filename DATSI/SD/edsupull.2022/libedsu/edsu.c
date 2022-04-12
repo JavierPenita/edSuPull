@@ -37,10 +37,10 @@ __attribute__((destructor)) void fin(void){
 }
 
 struct cabecera {
-	const void *evento;
-    char *id;
-    UUID_t uuid;
-    const char *tema;
+	int evento;
+    int id;
+    int  uuid;
+    int tema;
 };
 
 // operaciones que implementan la funcionalidad del proyecto
