@@ -18,7 +18,7 @@ typedef struct tema {
 } tema;
 
 typedef struct cliente {
-    int *identificador = uuid; // clave de acceso UUID
+    const char *identificador = uuid; // clave de acceso UUID
     set *tema_subscritos;        // temas a los que pertenece
     queue *eventos;    // eventos encolados a ese cliente
     // ....
@@ -175,6 +175,8 @@ int main(int argc, char *argv[]){
     struct sockaddr_in dir, dir_cliente;
     struct stat st;
     int opcion=1;
+    map *mt = map_create(key_string, 0);
+    map *mc = map_create(key_string, 0);
 
     if(argc!=3) {
         fprintf(stderr, "Uso: %s puerto fichero_temas\n", argv[0]);

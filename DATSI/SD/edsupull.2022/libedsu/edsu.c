@@ -49,6 +49,7 @@ int Trader(const void *evento, uint32_t tam_evento, char *id, int uuid,const cha
     int escrito;
     char rec[16];
     if(id == "1"){
+        uuid = generate_UUID(uuidCont);
         uuidCont = uuidCont +1;
     }
     if(id == "2"){
@@ -62,7 +63,7 @@ int Trader(const void *evento, uint32_t tam_evento, char *id, int uuid,const cha
         cab.uuid=htonl(strlen(uuid));
         cab.tema=htonl(strlen(tema));
       
-        struct iovec iov[4];
+        struct iovec iov[5];
             iov[0].iov_base=&cab;
 	        iov[0].iov_len=sizeof(cab);
 
