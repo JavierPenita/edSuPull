@@ -39,14 +39,15 @@ __attribute__((destructor)) void fin(void){
 struct cabecera {
 	int evento;
     int id;
-    int  uuid;
+    int uuid;
     int tema;
 };
 
 // operaciones que implementan la funcionalidad del proyecto
 
-int Trader(const void *evento, uint32_t tam_evento, char *id, UUID_t uuid,const char *tema){
+int Trader(const void *evento, uint32_t tam_evento, char *id, int uuid,const char *tema){
     int escrito;
+    char rec[16];
     if(id == "1"){
         uuidCont = uuidCont +1;
     }
@@ -54,7 +55,7 @@ int Trader(const void *evento, uint32_t tam_evento, char *id, UUID_t uuid,const 
         close(s)
     }
     if( id > "2" ) {
-
+        //Escritura en broker
         struct cabecera cab;
         cab.evento=htonl(strlen(evento));
         cab.id=htonl(strlen(id));
@@ -81,10 +82,27 @@ int Trader(const void *evento, uint32_t tam_evento, char *id, UUID_t uuid,const 
         	    perror("error en writev");
         	    close(s);
         	    return -1;
+        printf("escrito %d\n", escrito);
+
+        //Recepcion en broker
+	    while((leido=recv(s, rec, TAM,0))>0){
+		    printf("rec: %s\n",rec);
+		    if(strcmp(rec,"OK")==0) {
+			    close(s);
+			    return 0;
+		    }
+		    else if(strcmp(rec,"FAIL")==0){
+			    printf("Recepcion datos no válida");
+			    close(s);
+			    return -1;
+		    }
+		    if (leido<0) {
+			    printf("error en read");
+			    close(s);
+			    return -1;
+		    }
         }
-        // receptor_tam_variable.c para recibir el ok
-    }
-    printf("escrito %d\n", escrito);
+	}
     return 0;
 }
 
@@ -93,7 +111,7 @@ int begin_clnt(void){
     if ((s < 0) {
 		perror("error creando socket");
 		return -1;
-	}  
+	}
     struct addrinfo *res; 
         if (getaddrinfo(getenv("BROKER_HOST"), getenv("BROKER_PORT"), NULL, &res) != 0) { 
                 perror("error en getaddrinfo");

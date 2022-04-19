@@ -18,7 +18,7 @@ typedef struct tema {
 } tema;
 
 typedef struct cliente {
-    const char *identificador = uuid; // clave de acceso UUID
+    int *identificador = uuid; // clave de acceso UUID
     set *tema_subscritos;        // temas a los que pertenece
     queue *eventos;    // eventos encolados a ese cliente
     // ....
@@ -125,15 +125,15 @@ int consume_evento(map *mc, char *id_cliente){
 }
 
 //numero de temas topic()
-int numero_temas(tema *t) {
-    ret = set_size(t->nombre);
-    printf("Temas: %s\n", set_size(t->nombre));
+int numero_temas(map *mt) {
+    ret = map_size(map *mt);
+    printf("Temas: %s\n", map_size(map *mt));
     return ret;
 }
 //numero de clients()
-int numero_clientes(cliente *c) {
-    ret = set_size(c->identificador);
-    printf("Clientes: %s\n", set_size(c->identificador));
+int numero_clientes(map *mc) {
+    ret = map_size(map *mc);
+    printf("Clientes: %s\n", map_size(map *mc));
     return ret;
 }
 //numero de subscriptores por tema
