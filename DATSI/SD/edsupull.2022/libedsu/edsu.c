@@ -45,7 +45,7 @@ struct cabecera {
 
 // operaciones que implementan la funcionalidad del proyecto
 
-int Trader(const void *evento, uint32_t tam_evento, char *id, int uuid,const char *tema){
+int Trader(const void *evento, uint32_t tam_evento, char *id, UUID_t uuid,const char *tema){
     int escrito;
     char rec[16];
     if(id == "1"){
