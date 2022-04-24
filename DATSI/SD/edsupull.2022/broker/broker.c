@@ -35,7 +35,7 @@ typedef struct evento {
 struct cabecera {
 	int evento;
     int id;
-    int  uuid;
+    int uuid;
     int tema;
 };
 
@@ -149,6 +149,7 @@ int main(int argc, char *argv[]){
     unsigned int tam_dir;
     struct sockaddr_in dir, dir_cliente;
     struct stat st;
+    struct iovec iovm[2];
     int opcion=1;
     map *mt = map_create(key_string, 0);
     map *mc = map_create(key_string, 0);
@@ -253,6 +254,12 @@ int main(int argc, char *argv[]){
                 break;
              case 7:
                 //topics
+                printf(numero_temas(mt))
+				iovm[0].iov_base = "OK";
+                iovm[0].iov_len = strlen("OK")+1;
+				//enviamos mensaje de estado al cliente						
+				writev(s_conec, iovm, 1);
+			}
                 break;
             case 8 :
                 //clients

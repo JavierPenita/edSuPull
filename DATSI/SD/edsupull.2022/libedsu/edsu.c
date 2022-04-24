@@ -137,7 +137,6 @@ int end_clnt(void){
         printf("Conexion de %d finalizada con exito \n", uuid);
     return trade;
 }
-
 int subscribe(const char *tema){
     int trade = Trader("/0", 0,"3",uuid,tema);
     return trade; 
