@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <sys/stat.h>
 
 //extern unsigned long GenerateUUID(uuid_t *uuid);
 
@@ -142,32 +143,6 @@ int numero_clientes_subscritos_tema(tema *t) {
     return ret;
 }
 
-//Conexion del broker con UUID
-void revierte(char *b, int t){
-    char aux;
-    for (int i=0; i<t/2; i++) {
-        aux=b[i];
-        b[i]=b[t-i-1];
-        b[t-i-1]=aux;
-    }
-}
-
-void *servicio(void *arg){
-        int s_srv, tam;
-        s_srv=(long) arg;
-        printf("nuevo cliente\n");
-        while (recv(s_srv, &tam, sizeof(tam), MSG_WAITALL)>0) {
-            printf("recibida petición cliente\n");
-            int tamn=ntohl(tam);
-            char *dato = malloc(tamn);
-            recv(s_srv, dato, tamn, MSG_WAITALL);
-            // sleep(5); // para probar que servicio no es concurrente
-            revierte(dato, tamn);
-            send(s_srv, dato, tamn, 0);
-        }
-        close(s_srv);
-	return NULL;
-}
 // Cambiar para que coja operaciones trader
 int main(int argc, char *argv[]){
     int s, s_conec;
@@ -206,13 +181,8 @@ int main(int argc, char *argv[]){
         close(s);
         return 1;
     }
-    pthread_t thid;
-    pthread_attr_t atrib_th;
-    pthread_attr_init(&atrib_th); // evita pthread_join
-    pthread_attr_setdetachstate(&atrib_th, PTHREAD_CREATE_DETACHED);
 
     //leer fichero_temas\n open(argumento temas, solo lectura)
-    
     FILE *f = fopen(argv[0], "r");
     if (f==NULL)
         perror ("Error al abrir el fichero de temas");
@@ -260,10 +230,41 @@ int main(int argc, char *argv[]){
         id[tam_id]='\0';
 		uuid[tam_uuid]='\0';
         tema[tam_tema]='\0';
-		
+
+		switch( id )
+        {
+            case 1:
+                //begin connect
+                break;
+            case 2 :
+                //end connect
+                break;
+            case 3 :
+                //subscribe
+                break;
+            case 4:
+                //unsubscribe
+                break;
+            case 5 :
+                //publish
+                break;
+            case 6 :
+                //get
+                break;
+             case 7:
+                //topics
+                break;
+            case 8 :
+                //clients
+                break;
+            case 9 :
+                //subscribers
+                break;
+            case 10 :
+                //events
+                break;
+        }
 		close(s_conec);
-      
-	pthread_create(&thid, &atrib_th, servicio, (void *)(long)s_conec);
     }
    
     //close(s);
