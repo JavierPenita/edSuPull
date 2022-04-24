@@ -259,10 +259,15 @@ int main(int argc, char *argv[]){
                 iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje de estado al cliente						
 				writev(s_conec, iovm, 1);
-			}
                 break;
             case 8 :
                 //clients
+                printf(numero_clientes(mc))
+				iovm[0].iov_base = "OK";
+                iovm[0].iov_len = strlen("OK")+1;
+				//enviamos mensaje de estado al cliente						
+				writev(s_conec, iovm, 1);
+                break;
                 break;
             case 9 :
                 //subscribers
