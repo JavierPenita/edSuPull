@@ -183,7 +183,7 @@ int main(int argc, char *argv[]){
     }
 
     //leer fichero_temas\n open(argumento temas, solo lectura)
-    FILE *f = fopen(argv[1], "r");
+    FILE *f = fopen(argv[2], "r");
     if (f==NULL)
         perror ("Error al abrir el fichero de temas");
         return -1;
@@ -195,8 +195,11 @@ int main(int argc, char *argv[]){
     }
     char *contenido_tema = malloc(sb.st_size);
 
-    while(fscanf(f, "%s", contenido_tema) != EOF){
-        printf("%s", contenido_tema);            
+    while(fscanf(f, "%ms", contenido_tema) != EOF){
+        tema *tema_repe = map_get(mt, contenido_tema, &error);
+        if(error == -1){
+            crea_tema(mt,contenido_tema);
+        }
     }
     fclose(f);
 
