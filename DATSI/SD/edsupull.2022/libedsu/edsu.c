@@ -11,12 +11,11 @@
 #include <sys/mman.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <uuid/uuid.h>
 
 
 int s, leido;
-char uuidCont[];
-char uuid;
+UUID_t uuid;
 
 // se ejecuta antes que el main de la aplicación
 __attribute__((constructor)) void inicio(void){
@@ -50,31 +49,12 @@ struct cabecera {
 int Trader(const void *evento, uint32_t tam_evento, int *id, char uuid,const char *tema){
     int escrito;
     char rec[16];
-    if(id = 1){
-        uuid = generate_UUID(uuidCont);
-         //Recepcion en broker
-	    while((leido=recv(s, rec, 16,0))>0){
-		    printf("rec: %s\n",rec);
-		    if(strcmp(rec,"OK")==0) {
-			    close(s);
-			    return 0;
-		    }
-		    else if(strcmp(rec,"FAIL")==0){
-			    printf("Recepcion datos no válida");
-			    close(s);
-			    return -1;
-		    }
-		    if (leido<0) {
-			    printf("error en read");
-			    close(s);
-			    return -1;
-		    }
-        }
-    }
-    if(id = 2){
+
+    if(id == 2){
         close(s);
     }
-    if(id > 2 ) {
+    if(id != 2 ) {
+        generate_UUID(uuid);
         //Escritura en broker
         struct cabecera cab;
         cab.evento=htonl(strlen(evento));

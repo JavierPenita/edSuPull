@@ -147,7 +147,8 @@ int main(int argc, char *argv[]){
     int s, s_conec;
     unsigned int tam_dir;
     struct sockaddr_in dir, dir_cliente;
-    struct stat st;
+    //struct stat st;
+    char buff[255];
     struct iovec iovm[2];
     int opcion=1;
     map *mt = map_create(key_string, 0);
@@ -184,21 +185,16 @@ int main(int argc, char *argv[]){
 
     //leer fichero_temas\n open(argumento temas, solo lectura)
     FILE *f = fopen(argv[2], "r");
-    if (f==NULL)
+   
+    if (f==NULL){
         perror ("Error al abrir el fichero de temas");
         return -1;
-    struct stat sb;
-
-    if (stat(f, &sb) == -1) {
-        perror("stat");
-        return -1;
     }
-    char *contenido_tema = malloc(sb.st_size);
-
-    while(fscanf(f, "%ms", contenido_tema) != EOF){
-        tema *tema_repe = map_get(mt, contenido_tema, &error);
+ 
+    while(fscanf(f, "%ms", buff) != EOF){
+        tema *tema_repe = map_get(mt, buff, &error);
         if(error == -1){
-            crea_tema(mt,contenido_tema);
+            crea_tema(mt,buff);
         }
     }
     fclose(f);
@@ -241,7 +237,8 @@ int main(int argc, char *argv[]){
                 //create client
                 
 			    // si todo va bien generamos mensaje de ok para cliente
-                printf("nombre cliente:%s\n", crea_cliente(mc, uuid));
+                crea_cliente(mc, uuid)
+                printf("nombre cliente:%s\n", uuid);
 			    iovm[0].iov_base = "OK"; 
                 iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
