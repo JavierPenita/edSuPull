@@ -10,11 +10,13 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <sys/uio.h>
 
 //extern unsigned long GenerateUUID(uuid_t *uuid);
 
 typedef struct tema {
-    char *nombre; // clave de acceso
+    const char *nombre; // clave de acceso
     set *subscritos;      // clientes subscritos al tema
     // ....
 } tema;
@@ -28,7 +30,6 @@ typedef struct cliente {
 
 typedef struct evento {
     char *texto;
-    clock_t fecha;
     int contador;
     // ....
 } evento;
@@ -41,7 +42,7 @@ struct cabecera {
 };
 
 // crea un cliente y lo añade al mapa
-cliente * crea_cliente(map *mc, const char *uuid) {
+cliente * crea_cliente(map *mc, UUID_t uuid) {
     cliente *c = malloc(sizeof(cliente));
     c->uuid = uuid;
     c->tema_subscritos = set_create(0); //almacena el conjunto de descriptores de los temas subscritos
@@ -65,7 +66,6 @@ tema * crea_tema(map *mt, const char *nombre) {
 evento * crea_evento(char *texto) {
     evento *e = malloc(sizeof(evento)); //caracter nulo final???
     e->texto=texto;
-    e->fecha=times(NULL);
     e->contador=0;
     return e;
 }
@@ -75,7 +75,7 @@ int subscribe_cliente_al_tema(tema *t, cliente *c) {
     int ret = -1;
     if (set_add(c->tema_subscritos, t)<0)
         fprintf(stderr, "error: el cliente ya estaba subscrito al tema\n");
-    else if (set_add( t->nombre, c)<0)
+    else if (set_add( t->subscritos, c)<0)
         fprintf(stderr, "error: el tema ya tiene a este cliente subscrito\n");
     else ret = 0;
     return ret;
@@ -118,8 +118,8 @@ int consume_evento(map *mc, char *uuid){
     printf("Persona %s: mensajes encolados %d\n", uuid, queue_length(c->eventos));
     for ( ; queue_length(c->eventos); ){
         e=queue_pop_front(c->eventos, NULL);
-        printf("%s ha recibido el mensaje (%s) en el momento %ld\n",
-            uuid, e->texto, e->fecha);
+        printf("%s ha recibido el mensaje (%s)\n",
+            uuid, e->texto);
 	if (--e->contador==0)
 	    free(e);
     }
@@ -147,8 +147,6 @@ int main(int argc, char *argv[]){
     int s, s_conec, error;
     unsigned int tam_dir;
     struct sockaddr_in dir, dir_cliente;
-    //struct stat st;
-    char buff[255];
     struct iovec iovm[2];
     int opcion=1;
     map *mt = map_create(key_string, 0);
@@ -182,7 +180,7 @@ int main(int argc, char *argv[]){
         close(s);
         return 1;
     }
-
+    
     //leer fichero_temas\n open(argumento temas, solo lectura)
     FILE *f = fopen(argv[2], "r");
    
@@ -190,12 +188,12 @@ int main(int argc, char *argv[]){
         perror ("Error al abrir el fichero de temas");
         return -1;
     }
- 
+    char *buff[255];
     while(fscanf(f, "%ms", buff) != EOF){
-        tema *tema_repe = map_get(mt, buff, &error);
-        if(error == -1){
-            crea_tema(mt,buff);
-        }
+      //  map_get(mt, buff, &error);
+        //if(error == -1){
+            crea_tema(mt,*buff);
+        //}
     }
     fclose(f);
 
@@ -209,7 +207,7 @@ int main(int argc, char *argv[]){
         }
         struct cabecera cab;
         int id;
-        char uuid;
+        UUID_t uuid;
 
 		recv(s_conec, &cab, sizeof(cab), MSG_WAITALL);
 		int tam_evento=ntohl(cab.evento);
@@ -229,29 +227,31 @@ int main(int argc, char *argv[]){
 		
 		evento[tam_evento]='\0';
         tema[tam_tema]='\0';
-
+        char *nombre = (char *)malloc(tam_tema * sizeof(char));
+        char *text = (char *)malloc(tam_evento * sizeof(char));
         int res;
 		switch(id)
         {
             case 1:
                 //create client
-                
-			    // si todo va bien generamos mensaje de ok para cliente
-                crea_cliente(mc, uuid)
+                crea_cliente(mc, uuid);
                 printf("nombre cliente:%s\n", uuid);
-			    iovm[0].iov_base = "OK"; 
-                iovm[0].iov_len = strlen("OK")+1;
+			    iovm[0].iov_base = "OK";  iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-				writev(s_conec, iovm, 1);	
+                if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }
                 break;
             case 2 :
                 //end connect
                 close(s);
-                printf("Cliente cerrado:%s\n",s);
                 break;
             case 3 :
                 //subscribe
-                if((res=subscribe_cliente_al_tema(tema, uuid)==0)){
+                
+                if((res=subscribe_cliente_al_tema(map_get(mt, nombre , &error), map_get(mc, uuid , &error))==0)){
 					// si todo va bien generamos mensaje de ok para cliente
 					iovm[0].iov_base = "OK"; iovm[0].iov_len = strlen("OK")+1;
 				} else if(res<0) {
@@ -259,7 +259,11 @@ int main(int argc, char *argv[]){
 					iovm[0].iov_base = "FAIL"; iovm[0].iov_len = strlen("FAIL")+1;					
 				}
 				//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-				writev(s_conec, iovm, 1);	
+				if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }	
                 break;
             case 4:
                 //unsubscribe
@@ -271,11 +275,16 @@ int main(int argc, char *argv[]){
 					iovm[0].iov_base = "FAIL"; iovm[0].iov_len = strlen("FAIL")+1;					
 				}
 				//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-				writev(s_conec, iovm, 1);	
+				if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }	
                 break;
             case 5 :
                 //publish
-                if ((res = encola_evento(mt, tema,evento) == 0)) {
+
+                if ((res = encola_evento(mt, tema,crea_evento(texto)) == 0)) {
                     // si todo va bien generamos mensaje de ok para cliente
                     iovm[0].iov_base = "OK"; iovm[0].iov_len = strlen("OK") + 1;
                 }
@@ -284,7 +293,11 @@ int main(int argc, char *argv[]){
                     iovm[0].iov_base = "FAIL"; iovm[0].iov_len = strlen("FAIL") + 1;
                 }
                 //enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-                writev(s_conec, iovm, 1);
+                if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }
                 break;
             case 6 :
                 //get
@@ -297,32 +310,48 @@ int main(int argc, char *argv[]){
                     iovm[0].iov_base = "FAIL"; iovm[0].iov_len = strlen("FAIL") + 1;
                 }
                 //enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-                writev(s_conec, iovm, 1);
+                if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }
                 break;
                 break;
              case 7:
                 //topics
-                 printf(numero_temas(mt));
+                map_size(mt);
 				iovm[0].iov_base = "OK";
                 iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje de estado al cliente						
-				writev(s_conec, iovm, 1);
+				if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }
                 break;
             case 8 :
                 //clients
-                printf(numero_clientes(mc));
+                map_size(mc);
 				iovm[0].iov_base = "OK";
                 iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje de estado al cliente						
-				writev(s_conec, iovm, 1);
+				if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }
                 break;
             case 9 :
                 //subscribers
-                printf(numero_clientes_subscritos_tema(tema));
+                numero_clientes_subscritos_tema(map_get(mt,nombre,&error);
 				iovm[0].iov_base = "OK";
                 iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje de estado al cliente						
-				writev(s_conec, iovm, 1);               
+				if ((writev(s_conec, iovm, 1)) < 0) {
+        	        perror("error en writev");
+        	        close(s);
+        	        return -1;
+                }               
                 break;
             case 10 :
                 //events

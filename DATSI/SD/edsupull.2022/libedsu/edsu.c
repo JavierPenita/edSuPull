@@ -16,6 +16,8 @@
 
 int s, leido;
 UUID_t uuid;
+char *tema;
+
 // se ejecuta antes que el main de la aplicación
 __attribute__((constructor)) void inicio(void){
     if (begin_clnt()<0) {
@@ -165,12 +167,12 @@ int begin_clnt(void){
         }
         freeaddrinfo(res);
 
-        Trader("\0", 0, 1, uuid, NULL);
+        Trader("\0", 0, 1, uuid, tema);
   	return 0;
 }
 
 int end_clnt(void){
-    int trade = Trader("/0", 0, 2, uuid, NULL);
+    int trade = Trader("/0", 0, 2, uuid, tema);
     return trade;
 }
 int subscribe(const char *tema){
@@ -187,7 +189,7 @@ int publish(const char *tema, const void *evento, uint32_t tam_evento){
 }
 // reservar memoria
 int get(char **tema, void **evento, uint32_t *tam_evento){
-    int trade = Trader(evento, tam_evento, 6,uuid,tema);
+    int trade = Trader(*evento, tam_evento, 6,uuid,*tema);
     return trade;
 }
 
