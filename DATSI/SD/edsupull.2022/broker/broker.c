@@ -128,23 +128,23 @@ int consume_evento(map *mc, char *uuid){
 
 //numero de temas topic()
 int numero_temas(map *mt) {
-    printf("Temas: %s\n", map_size(mt));
+    printf("Temas: %d\n", map_size(mt));
     return map_size(mt);
 }
 //numero de clients()
 int numero_clientes(map *mc) {
-    printf("Clientes: %s\n", map_size(mc));
+    printf("Clientes: %d\n", map_size(mc));
     return map_size(mc);
 }
 //numero de subscriptores por tema
 int numero_clientes_subscritos_tema(tema *t) {
-    printf("Clientes: %s\n", set_size(t->subscritos));
+    printf("Clientes: %d\n", set_size(t->subscritos));
     return set_size(t->subscritos);
 }
 
 // Cambiar para que coja operaciones trader
 int main(int argc, char *argv[]){
-    int s, s_conec;
+    int s, s_conec, error;
     unsigned int tam_dir;
     struct sockaddr_in dir, dir_cliente;
     //struct stat st;
