@@ -50,7 +50,6 @@ struct cabecera {
 int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const char *tema){
     int escrito;
     char rec[16];
-
     if(id == 2){
         //Escritura en broker
         struct cabecera cab;
@@ -79,24 +78,24 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
         	    close(s);
         	    return -1;
         printf("escrito %d\n", escrito);
-	}
-        //Recepcion en broker
-	printf("rec: %s\n",rec);
-	if(strcmp(rec,"OK")==0) {
-		close(s);
-		return 0;
-	 }
-	 else if(strcmp(rec,"FAIL")==0){
-		printf("Recepcion datos no válida");
-		close(s);
-		return -1;
-	 }
-	 if (leido<0) {
-		printf("error en read");
-		close(s);
-		return -1;
-	 }
-        close(s);
+	    }
+            //Recepcion en broker
+	    printf("rec: %s\n",rec);
+	    if(strcmp(rec,"OK")==0) {
+		    close(s);
+		    return 0;
+	     }
+	     else if(strcmp(rec,"FAIL")==0){
+		    printf("Recepcion datos no válida");
+		    close(s);
+		    return -1;
+	     }
+	     if (leido<0) {
+		    printf("error en read");
+		    close(s);
+		    return -1;
+	     }
+            close(s);
     }
     if(id != 2 ) {
         //Escritura en broker
@@ -126,25 +125,25 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
         	    close(s);
         	    return -1;
         printf("escrito %d\n", escrito);
-	}
-        //Recepcion en broker
-	printf("rec: %s\n",rec);
-	if(strcmp(rec,"OK")==0) {
-		close(s);
-		return 0;
-	}
-	else if(strcmp(rec,"FAIL")==0){
-		printf("Recepcion datos no válida");
-		close(s);
-		return -1;
-	}
-	if (leido<0) {
-		printf("error en read");
-		close(s);
-		return -1;
-	}
+	    }
+            //Recepcion en broker
+	    printf("rec: %s\n",rec);
+	    if(strcmp(rec,"OK")==0) {
+		    close(s);
+		    return 0;
+	    }
+	    else if(strcmp(rec,"FAIL")==0){
+		    printf("Recepcion datos no válida");
+		    close(s);
+		    return -1;
+	    }
+	    if (leido<0) {
+		    printf("error en read");
+		    close(s);
+		    return -1;
+	    }
     }
-    return 0;
+return 0;
 }
 
 int begin_clnt(void){
@@ -197,11 +196,11 @@ int get(char **tema, void **evento, uint32_t *tam_evento){
 
 // operaciones que facilitan la depuración y la evaluación
 int topics(){ // cuántos temas existen en el sistema
-    int trade =  Trader("/0", 0, 7,uuid,NULL);
+    int trade =  Trader("/0", 0, 7,uuid,tema);
     return trade;
 }
 int clients(){ // cuántos clientes existen en el sistema
-    int trade = Trader("/0", 0, 8,uuid,NULL);
+    int trade = Trader("/0", 0, 8,uuid,tema);
     return trade;
 }
 int subscribers(const char *tema){ // cuántos subscriptores tiene este tema
@@ -209,6 +208,6 @@ int subscribers(const char *tema){ // cuántos subscriptores tiene este tema
     return trade;
 }
 int events() { // nº eventos pendientes de recoger por este cliente
-    int trade = Trader("/0", 0, 10,uuid,NULL);
+    int trade = Trader("/0", 0, 10,uuid,tema);
     return trade;
 }
