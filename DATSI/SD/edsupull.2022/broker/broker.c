@@ -143,20 +143,18 @@ int numero_clientes_subscritos_tema(tema *t) {
 }
 
 void *servicio(void *arg){
-        int s_srv, tam;
-        s_srv=(long) arg;
-        printf("nuevo cliente\n");
-        while (recv(s_srv, &tam, sizeof(tam), MSG_WAITALL)>0) {
-            printf("recibida petición cliente\n");
-            int tamn=ntohl(tam);
-            char *dato = malloc(tamn);
-            recv(s_srv, dato, tamn, MSG_WAITALL);
-            sleep(5); // para probar que servicio no es concurrente
-            revierte(dato, tamn);
-            send(s_srv, dato, tamn, 0);
-        }
-        close(s_srv);
-	return NULL;
+
+    crea_cliente(mc, uuid);
+    printf("nombre cliente:%s\n", uuid);
+    iovm[0].iov_base = "OK"; 
+    iovm[0].iov_len = strlen("OK")+1;
+	//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
+    if ((writev(s_conec, iovm, 1)) < 0) {
+        perror("error en writev");
+        close(s);
+         return -1;
+     }
+	return 0;
 }
 
 // Cambiar para que coja operaciones trader
@@ -245,7 +243,7 @@ int main(int argc, char *argv[]){
 		evento[tam_evento]='\0';
         tema[tam_tema]='\0';
         char *nombre = (char *)malloc(tam_tema * sizeof(char));
-        char *text = (char *)malloc(tam_evento * sizeof(char));
+        char *texto = (char *)malloc(tam_evento * sizeof(char));
         int res;
         pthread_t thid;
         pthread_attr_t atrib_th;
@@ -255,16 +253,7 @@ int main(int argc, char *argv[]){
         {
             case 1:
                 //create client
-                crea_cliente(mc, uuid);
                 pthread_create(&thid, &atrib_th, servicio, (void *)(long)s_conec);
-                printf("nombre cliente:%s\n", uuid);
-			    iovm[0].iov_base = "OK";  iovm[0].iov_len = strlen("OK")+1;
-				//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-                if ((writev(s_conec, iovm, 1)) < 0) {
-        	        perror("error en writev");
-        	        close(s);
-        	        return -1;
-                }
                 break;
             case 2 :
                 //end connect
@@ -365,7 +354,7 @@ int main(int argc, char *argv[]){
                 break;
             case 9 :
                 //subscribers
-                numero_clientes_subscritos_tema(map_get(mt,nombre,&error);
+                numero_clientes_subscritos_tema(map_get(mt,nombre,&error));
 				iovm[0].iov_base = "OK";
                 iovm[0].iov_len = strlen("OK")+1;
 				//enviamos mensaje de estado al cliente						
@@ -377,7 +366,7 @@ int main(int argc, char *argv[]){
                 break;
             case 10 :
                 //events
-                break;
+             break
         }
 		close(s_conec);
     }
