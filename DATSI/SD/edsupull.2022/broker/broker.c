@@ -40,6 +40,7 @@ struct cabecera {
     int uuid;
     int tema;
 };
+ UUID_t uuid;
 
 // crea un cliente y lo añade al mapa
 cliente * crea_cliente(map *mc, UUID_t uuid) {
@@ -143,16 +144,17 @@ int numero_clientes_subscritos_tema(tema *t) {
 }
 
 void *servicio(void *arg){
-
-    crea_cliente(mc, uuid);
+    int s_conec;
+    s_conec=(long) arg;
+    struct iovec iovm[2];
+   
     printf("nombre cliente:%s\n", uuid);
     iovm[0].iov_base = "OK"; 
     iovm[0].iov_len = strlen("OK")+1;
 	//enviamos mensaje al cliente para que sepa si la operacion ha ido bien o mal
-    if ((writev(s_conec, iovm, 1)) < 0) {
-        perror("error en writev");
-        close(s);
-         return -1;
+     if ((writev(s_conec, iovm, 1)) < 0) {
+         perror("error en writev");
+         close(s_conec);
      }
 	return 0;
 }
@@ -222,7 +224,6 @@ int main(int argc, char *argv[]){
         }
         struct cabecera cab;
         int id;
-        UUID_t uuid;
 
 		recv(s_conec, &cab, sizeof(cab), MSG_WAITALL);
 		int tam_evento=ntohl(cab.evento);
@@ -253,6 +254,7 @@ int main(int argc, char *argv[]){
         {
             case 1:
                 //create client
+                crea_cliente(mc, uuid);
                 pthread_create(&thid, &atrib_th, servicio, (void *)(long)s_conec);
                 break;
             case 2 :
@@ -366,7 +368,7 @@ int main(int argc, char *argv[]){
                 break;
             case 10 :
                 //events
-             break
+             break;
         }
 		close(s_conec);
     }
