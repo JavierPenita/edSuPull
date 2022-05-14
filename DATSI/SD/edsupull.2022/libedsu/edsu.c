@@ -55,7 +55,7 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
         //Escritura en broker
         struct cabecera cab;
         cab.evento=htonl(strlen(evento));
-        //cab.id=htonl(sizeof(id));
+        cab.id=htonl(sizeof(id));
         //cab.uuid=htonl(sizeof(uuid));
         cab.tema=htonl(strlen(tema));
         struct iovec iov[5];
@@ -66,7 +66,7 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
 	        iov[1].iov_len=strlen(evento);
 
 	        iov[2].iov_base=&id;
-	        //iov[2].iov_len=sizeof(id);
+	        iov[2].iov_len=sizeof(id);
 
             iov[3].iov_base=&uuid;
 	        //iov[3].iov_len=sizeof(uuid);
@@ -81,27 +81,13 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
         printf("escrito %d\n", escrito);
 	    }
             //Recepcion en broker
-	    printf("rec: %s\n",rec);
-	    if(strcmp(rec,"OK")==0) {
-		    close(s);
-		    return 0;
-	    }
-	    else if(strcmp(rec,"FAIL")==0){
-		    printf("Recepcion datos no válida");
-		    close(s);
-		    return -1;
-	    }
-	    if (leido<0) {
-		    printf("error en read");
-		    close(s);
-		    return -1;
-	    }
+	    recv(s, &cab, sizeof(cab), MSG_WAITALL);
     }
     if(id == 2){
         //Escritura en broker
         struct cabecera cab;
         cab.evento=htonl(strlen(evento));
-        //cab.id=htonl(sizeof(id));
+        cab.id=htonl(sizeof(id));
         //cab.uuid=htonl(sizeof(uuid));
         cab.tema=htonl(strlen(tema));
         struct iovec iov[5];
@@ -112,7 +98,7 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
 	        iov[1].iov_len=strlen(evento);
 
 	        iov[2].iov_base=&id;
-	        //iov[2].iov_len=sizeof(id);
+	        iov[2].iov_len=sizeof(id);
 
             iov[3].iov_base=&uuid;
 	        //iov[3].iov_len=sizeof(uuid);
@@ -127,28 +113,14 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
         printf("escrito %d\n", escrito);
 	    }
             //Recepcion en broker
-	    printf("rec: %s\n",rec);
-	    if(strcmp(rec,"OK")==0) {
-		    close(s);
-		    return 0;
-	     }
-	     else if(strcmp(rec,"FAIL")==0){
-		    printf("Recepcion datos no válida");
-		    close(s);
-		    return -1;
-	     }
-	     if (leido<0) {
-		    printf("error en read");
-		    close(s);
-		    return -1;
-	     }
+	    recv(s, &cab, sizeof(cab), MSG_WAITALL);
             close(s);
     }
     if(id != 2 ) {
         //Escritura en broker
         struct cabecera cab;
         cab.evento=htonl(strlen(evento));
-        //cab.id=htonl(sizeof(id));
+        cab.id=htonl(sizeof(id));
         //cab.uuid=htonl(sizeof(uuid));
         cab.tema=htonl(strlen(tema));
         struct iovec iov[5];
@@ -159,7 +131,7 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
 	        iov[1].iov_len=strlen(evento);
 
 	        iov[2].iov_base=&id;
-	        //iov[2].iov_len=sizeof(id);
+	        iov[2].iov_len=sizeof(id);
 
             iov[3].iov_base=&uuid;
 	        //iov[3].iov_len=sizeof(uuid);
@@ -174,21 +146,8 @@ int Trader(const void *evento, uint32_t tam_evento, int id, UUID_t uuid,const ch
         printf("escrito %d\n", escrito);
 	    }
             //Recepcion en broker
-	    printf("rec: %s\n",rec);
-	    if(strcmp(rec,"OK")==0) {
-		    close(s);
-		    return 0;
-	    }
-	    else if(strcmp(rec,"FAIL")==0){
-		    printf("Recepcion datos no válida");
-		    close(s);
-		    return -1;
-	    }
-	    if (leido<0) {
-		    printf("error en read");
-		    close(s);
-		    return -1;
-	    }
+	    recv(s, &cab, sizeof(cab), MSG_WAITALL);
+	    
     }
 return 0;
 }
